@@ -2,6 +2,7 @@ package com.app.cash.tools;
 
 import com.app.cash.tools.classes.*;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
@@ -37,29 +38,134 @@ public class Main {
         daftarMenu.tampilDaftarMenu();
     }
 
+    public double checkInputNumber(String label){
+        try{
+            Scanner get = new Scanner(System.in);
+            System.out.println(label);
+            double nilai = get.nextDouble();
+
+            return nilai;
+        } catch (InputMismatchException e){
+            System.out.println("Harap Masukan angka : \t\t" );
+            return checkInputNumber(label);
+        }
+    }
+
     public static void main(String[] args) {
 
         Scanner input = new Scanner(System.in);
 
+        String no_transaksi, nama_pemesan, tanggal, no_meja = "";
+        String transaksi_lagi = "",pesan_lagi = "", keterangan = "", makan_ditempat;
+        int jumlah_pesanan, no_menu;
+
+
         Main app = new Main();
-        app.generateDaftarMenu(); {
+        app.generateDaftarMenu();
+
+        do {
             //transaction start
             System.out.println("=======>> TRANSAKSI <<<=======");
 
             System.out.print("No Transaksi : ");
-            String no_transaksi = input.next();
+            no_transaksi = input.next();
             System.out.print("Pemesan : ");
-            String nama_pemesanan = input.next();
+            nama_pemesan = input.next();
             System.out.print("Tanggal : [dd-mm-yyyy] ");
-            String tanggal = input.next();
+            tanggal = input.next();
             System.out.print("Makan ditempat? [Y/N] ");
-            String makan_ditempat = input.next();
+            makan_ditempat = input.next();
 
             if (makan_ditempat.equalsIgnoreCase("Y")) {
                 System.out.print("Nomor Meja : ");
-                String no_meja = input.next();
+                no_meja = input.next();
             }
-        }
+
+            Transaksi trans = new Transaksi(no_transaksi, nama_pemesan,tanggal, no_meja);
+            System.out.println("--------- PESANAN ----------");
+            int no_kuah;
+            do{
+                Menu menu_yang_dipilih = app.daftarMenu.pilihMenu();
+
+                jumlah_pesanan = (int) app.checkInputNumber("Jumlah : ");
+
+                Pesanan pesanan = new Pesanan(menu_yang_dipilih, jumlah_pesanan);
+                trans.tambahPesanan(pesanan);
+
+                if(menu_yang_dipilih.getKategori().equals("Ramen")){
+                    int jumlah_ramen = jumlah_pesanan;
+
+                    do{
+                        Menu kuah_yang_dipilih = app.daftarMenu.pilihKuah();
+
+                        System.out.println("Level : [0-5] : ");
+                        String level = input.next();
+
+                        int jumlah_kuah = 0;
+
+                        do{
+                            jumlah_kuah = (int) app.checkInputNumber("Jumlah : ");
+
+                            if(jumlah_kuah > jumlah_ramen){
+                                System.out.println("Jumlah Kuah Harus Sesuai Dengan Jumlah Ramen");
+                            } else{
+                                break;
+                            }
+                        } while(jumlah_kuah > jumlah_ramen);
+                        Pesanan pesanan_kuah = new Pesanan(kuah_yang_dipilih, jumlah_kuah);
+                        pesanan_kuah.setKeterangan("Level" + level);
+
+                        trans.tambahPesanan(pesanan_kuah);
+
+                        jumlah_ramen -= jumlah_kuah;
+                    }while(jumlah_ramen>0);
+                } else{
+                    System.out.println("Keterangan : [- saja jika tidak ada] : ");
+                    keterangan = input.next();
+                }
+
+                if(!keterangan.equals("-")){
+                    pesanan.setKeterangan(keterangan);
+                }
+
+                System.out.println("Tambah Pesanan? (y/n) : ");
+                pesan_lagi = input.next();
+            } while (pesan_lagi.equalsIgnoreCase("y"));
+
+            trans.cetakStruk();
+
+            double totalPemesanan = trans.hitungTotalPesanan();
+            System.out.println("-------------------------------");
+            System.out.println("Total : \t\t" + totalPemesanan);
+
+            trans.setPajak(PAJAK_PPN);
+            double ppn = trans.hitungPajak();
+            System.out.println("Pajak 10% : \t\t" + ppn);
+
+            double biayaService = 0;
+            if(makan_ditempat.equalsIgnoreCase("y")){
+                trans.setBiayaService(BIAYA_SERVICE);
+                biayaService = trans.hitungBiayaService();
+                System.out.println("Service 5% : \t\t" + biayaService);
+            }
+
+            System.out.println("Total : \t\t"+ trans.hitungTotalBayar(ppn, biayaService));
+
+            double uangKembali = 0;
+            do{
+                double uangBayar = app.checkInputNumber("Uang Bayar : \t\t");
+                uangKembali = trans.hitungKembalian(uangBayar);
+                if(uangKembali <0){
+                    System.out.println("Uang anda kurang");
+                } else {
+                    System.out.println("Kembalian : \t\t" + uangKembali);
+                    break;
+                }
+            }while (uangKembali < 0);
+            System.out.println("Lakukan Transaksi Lagi?");
+            transaksi_lagi = input.next();
+        } while (transaksi_lagi.equalsIgnoreCase("y"));
+        System.out.println(">>>>>>>> TERIMA KASIH <<<<<<<<");
     }
 
 }
