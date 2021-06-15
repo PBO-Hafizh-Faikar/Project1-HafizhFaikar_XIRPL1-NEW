@@ -2,8 +2,10 @@ package com.app.cash.tools.classes;
 
 public class Ramen extends Menu{
 
-    public Ramen(String nsma_ramen, double harga){
-
+    public Ramen(String nama_ramen, double harga){
+        setNama_menu(nama_ramen);
+        setHarga(harga);
+        setKategori("Ramen");
     }
 
 }
