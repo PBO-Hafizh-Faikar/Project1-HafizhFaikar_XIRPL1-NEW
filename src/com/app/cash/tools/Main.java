@@ -32,6 +32,7 @@ public class Main {
         daftarMenu.tambahMenu(new Minuman("Jus Stroberi", 11000));
         daftarMenu.tambahMenu(new Minuman("Capucino Coffee", 15000));
         daftarMenu.tambahMenu(new Minuman("V60", 14000));
+        daftarMenu.tambahMenu(new Minuman("Tea", 14000));
 
         daftarMenu.tampilDaftarMenu();
     }
